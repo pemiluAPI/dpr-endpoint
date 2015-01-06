@@ -63,7 +63,7 @@ module Pemilu
         {
           results: {
             count: anggota_dpr.count,
-            total: AnggotaDpr.where(conditions).where(search).where(terpilih_search).count,
+            total: AnggotaDpr.where(conditions).where(search).count,
             anggota: anggota_dpr
           }
         }
