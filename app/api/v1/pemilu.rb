@@ -100,6 +100,7 @@ module Pemilu
                   riwayat_pendidikan: anggota.riwayat_pendidikan_dprs,
                   riwayat_pekerjaan: anggota.riwayat_pekerjaan_dprs,
                   riwayat_organisasi: anggota.riwayat_organisasi_dprs,
+                  sikap_politik: anggota.sikap_politiks,
                   provinsi: anggota.province,
                   dapil: anggota.electoral_district,
                   partai: anggota.party,
