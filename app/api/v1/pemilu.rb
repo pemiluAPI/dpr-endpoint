@@ -5,9 +5,9 @@ module Pemilu
     format :json
 
     resource :anggota do
-      desc "Return all Anggota DPR 2014"
+      desc "Return all member of DPR"
       get do
-        anggota_dpr = Array.new
+        members = Array.new
 
         # Prepare conditions based on params
         valid_params = {
@@ -15,8 +15,10 @@ module Pemilu
           dapil: 'id_dapil',
           partai: 'id_partai',
           provinsi: 'id_provinsi',
-          tahun: 'tahun'
+          tahun: 'tahun',
+          komisi: 'komisi_id'
         }
+
         conditions = Hash.new
         valid_params.each_pair do |key, value|
           conditions[value.to_sym] = params[key.to_sym] unless params[key.to_sym].blank?
@@ -27,91 +29,144 @@ module Pemilu
 
         search = ["nama LIKE ? and agama LIKE ?", "%#{params[:nama]}%", "%#{params[:agama]}%"]
 
-        AnggotaDpr.includes(:province, :electoral_district, :party)
+        AnggotaDpr.includes(:province, :electoral_district, :party, :komisi)
           .where(conditions)
           .where(search)
           .limit(limit)
           .offset(params[:offset])
-          .each do |anggota|
-            anggota_dpr << {
-              id: anggota.id,
-              tahun: anggota.tahun,
-              lembaga: anggota.lembaga,
-              nama: anggota.nama,
-              jenis_kelamin: anggota.jenis_kelamin,
-              agama: anggota.agama,
-              tempat_lahir: anggota.tempat_lahir,
-              tanggal_lahir: anggota.tanggal_lahir,
-              status_perkawinan: anggota.status_perkawinan,
-              nama_pasangan: anggota.nama_pasangan,
-              jumlah_anak: anggota.jumlah_anak,
-              kelurahan_tinggal: anggota.kelurahan_tinggal,
-              kecamatan_tinggal: anggota.kecamatan_tinggal,
-              kab_kota_tinggal: anggota.kab_kota_tinggal,
-              provinsi_tinggal: anggota.provinsi_tinggal,
-              provinsi: anggota.province,
-              dapil: anggota.electoral_district,
-              partai: anggota.party,
-              urutan: anggota.urutan,
-              foto_url: anggota.foto_url,
-              suara_sah: anggota.suara_sah,
-              peringkat_suara_sah_calon: anggota.peringkat_suara_sah_calon,
-              terpilih: anggota.terpilih
+          .each do |member|
+            members << {
+              id: member.id,
+              tahun: member.tahun,
+              lembaga: member.lembaga,
+              nama: member.nama,
+              jenis_kelamin: member.jenis_kelamin,
+              agama: member.agama,
+              tempat_lahir: member.tempat_lahir,
+              tanggal_lahir: member.tanggal_lahir,
+              status_perkawinan: member.status_perkawinan,
+              nama_pasangan: member.nama_pasangan,
+              jumlah_anak: member.jumlah_anak,
+              kelurahan_tinggal: member.kelurahan_tinggal,
+              kecamatan_tinggal: member.kecamatan_tinggal,
+              kab_kota_tinggal: member.kab_kota_tinggal,
+              provinsi_tinggal: member.provinsi_tinggal,
+              provinsi: member.province,
+              dapil: member.electoral_district,
+              partai: member.party,
+              urutan: member.urutan,
+              foto_url: member.foto_url,
+              suara_sah: member.suara_sah,
+              peringkat_suara_sah_calon: member.peringkat_suara_sah_calon,
+              terpilih: member.terpilih,
+              komisi: member.komisi
             }
         end
 
         {
           results: {
-            count: anggota_dpr.count,
+            count: members.count,
             total: AnggotaDpr.where(conditions).where(search).count,
-            anggota: anggota_dpr
+            anggota: members
           }
         }
       end
 
-      desc "Return a Anggota DPR 2014"
+      desc "Return a member of DPR"
       params do
-        requires :id, type: String, desc: "Anggota DPR ID."
+        requires :id, type: String, desc: "Member of DPR ID."
       end
       route_param :id do
         get do
-            anggota = AnggotaDpr.find_by(id: params[:id])
+            member = AnggotaDpr.find_by(id: params[:id])
 
             {
               results: {
                 count: 1,
                 total: 1,
                 anggota: [{
-                  id: anggota.id,
-                  tahun: anggota.tahun,
-                  lembaga: anggota.lembaga,
-                  nama: anggota.nama,
-                  jenis_kelamin: anggota.jenis_kelamin,
-                  agama: anggota.agama,
-                  tempat_lahir: anggota.tempat_lahir,
-                  tanggal_lahir: anggota.tanggal_lahir,
-                  status_perkawinan: anggota.status_perkawinan,
-                  nama_pasangan: anggota.nama_pasangan,
-                  jumlah_anak: anggota.jumlah_anak,
-                  kelurahan_tinggal: anggota.kelurahan_tinggal,
-                  kecamatan_tinggal: anggota.kecamatan_tinggal,
-                  kab_kota_tinggal: anggota.kab_kota_tinggal,
-                  provinsi_tinggal: anggota.provinsi_tinggal,
-                  riwayat_pendidikan: anggota.riwayat_pendidikan_dprs,
-                  riwayat_pekerjaan: anggota.riwayat_pekerjaan_dprs,
-                  riwayat_organisasi: anggota.riwayat_organisasi_dprs,
-                  sikap_politik: anggota.sikap_politiks,
-                  provinsi: anggota.province,
-                  dapil: anggota.electoral_district,
-                  partai: anggota.party,
-                  urutan: anggota.urutan,
-                  foto_url: anggota.foto_url,
-                  suara_sah: anggota.suara_sah,
-                  peringkat_suara_sah_calon: anggota.peringkat_suara_sah_calon,
-                  terpilih: anggota.terpilih
+                  id: member.id,
+                  tahun: member.tahun,
+                  lembaga: member.lembaga,
+                  nama: member.nama,
+                  jenis_kelamin: member.jenis_kelamin,
+                  agama: member.agama,
+                  tempat_lahir: member.tempat_lahir,
+                  tanggal_lahir: member.tanggal_lahir,
+                  status_perkawinan: member.status_perkawinan,
+                  nama_pasangan: member.nama_pasangan,
+                  jumlah_anak: member.jumlah_anak,
+                  kelurahan_tinggal: member.kelurahan_tinggal,
+                  kecamatan_tinggal: member.kecamatan_tinggal,
+                  kab_kota_tinggal: member.kab_kota_tinggal,
+                  provinsi_tinggal: member.provinsi_tinggal,
+                  riwayat_pendidikan: member.riwayat_pendidikan_dprs,
+                  riwayat_pekerjaan: member.riwayat_pekerjaan_dprs,
+                  riwayat_organisasi: member.riwayat_organisasi_dprs,
+                  sikap_politik: member.sikap_politiks,
+                  provinsi: member.province,
+                  dapil: member.electoral_district,
+                  partai: member.party,
+                  urutan: member.urutan,
+                  foto_url: member.foto_url,
+                  suara_sah: member.suara_sah,
+                  peringkat_suara_sah_calon: member.peringkat_suara_sah_calon,
+                  terpilih: member.terpilih,
+                  komisi: member.komisi
                 }]
               }
             }
+        end
+      end
+    end
+
+    resource :komisi do
+      desc "Return all Komisi DPR"
+      get do
+        komisi = Array.new
+
+        valid_params = {
+            komisi: 'id'
+        }
+
+        conditions = Hash.new
+        valid_params.each_pair do |key, value|
+          conditions[value.to_sym] = params[key.to_sym] unless params[key.to_sym].blank?
+        end
+
+        Komisi.where(conditions)
+          .each do |data|
+            komisi << {
+              id: data.id,
+              nama: data.nama
+            }
+        end
+
+        {
+          results: {
+            count: komisi.count,
+            komisi: komisi
+          }
+        }
+      end
+
+      desc "Return a Komisi"
+      params do
+        requires :id, type: Integer, desc: "Komisi ID."
+      end
+      route_param :id do
+        get do
+            komisi = Komisi.find_by(id: params[:id])
+          {
+            results: {
+              count: 1,
+              total: 1,
+              komisi: [{
+                id: komisi.id,
+                nama: komisi.nama
+              }]
+            }
+          }
         end
       end
     end
