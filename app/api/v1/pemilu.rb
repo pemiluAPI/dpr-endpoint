@@ -1,3 +1,19 @@
+module DprHelpers
+  def build_party(data_perolehan)
+    perolehan_kursi = Array.new
+
+    data_perolehan.map {|perolehan|
+      perolehan_kursi << {
+        id: perolehan.id,
+        partai: perolehan.party,
+        jumlah: perolehan.jumlah
+      }
+    }
+
+    return perolehan_kursi
+  end
+end
+
 module Pemilu
   class APIv1 < Grape::API
     version 'v1', using: :accept_version_header
@@ -168,6 +184,50 @@ module Pemilu
             }
           }
         end
+      end
+    end
+
+    resource :perolehan_kursi do
+      helpers DprHelpers
+
+      desc "Return all Penetapan Kursi Calon Terpilih"
+      get do
+        penetapan_perolehan_kursi = Array.new
+
+        # Prepare conditions based on params
+        valid_params = {
+          daerah: 'id'
+        }
+
+        conditions = Hash.new
+        valid_params.each_pair do |key, value|
+          conditions[value.to_sym] = params[key.to_sym] unless params[key.to_sym].blank?
+        end
+
+        # Set default limit
+        limit = (params[:limit].to_i == 0 || params[:limit].empty?) ? 50 : params[:limit]
+
+        DaerahPemilihan.includes([:perolehan_kursis => :party])
+          .where(conditions)
+          .limit(limit)
+          .offset(params[:offset])
+          .each do |daerah|
+
+            penetapan_perolehan_kursi << {
+                id: daerah.id,
+                nama: daerah.nama,
+                perolehan_kursi: build_party(daerah.perolehan_kursis)
+            }
+
+        end
+
+        {
+          results: {
+            count: penetapan_perolehan_kursi.count,
+            total: DaerahPemilihan.where(conditions).count,
+            data: penetapan_perolehan_kursi
+          }
+        }
       end
     end
 
