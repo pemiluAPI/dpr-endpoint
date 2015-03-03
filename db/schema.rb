@@ -11,7 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150217092032) do
+ActiveRecord::Schema.define(version: 20150302064408) do
+
+  create_table "akd_members", force: true do |t|
+    t.string "anggota_id"
+    t.string "nomor_anggota"
+    t.string "jabatan"
+    t.string "akd_id"
+    t.string "institute"
+  end
+
+  create_table "akds", force: true do |t|
+    t.string "nama"
+    t.text   "tugas"
+  end
 
   create_table "anggota_dprs", force: true do |t|
     t.string  "lembaga"
@@ -37,6 +50,7 @@ ActiveRecord::Schema.define(version: 20150217092032) do
     t.integer "peringkat_suara_sah_calon"
     t.string  "terpilih"
     t.string  "komisi_id"
+    t.string  "nomor_anggota"
   end
 
   create_table "daerah_pemilihans", force: true do |t|

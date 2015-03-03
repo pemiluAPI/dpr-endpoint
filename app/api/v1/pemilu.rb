@@ -12,6 +12,21 @@ module DprHelpers
 
     return perolehan_kursi
   end
+
+  def build_akd(data_akd)
+    member_of = Array.new
+
+    data_akd.map { |member|
+      member_of << {
+        id: member.id,
+        id_lembaga: member.akd_id,
+        lembaga: member.institute,
+        jabatan: member.jabatan
+      }
+    }
+
+    return member_of
+  end
 end
 
 module Pemilu
@@ -21,6 +36,8 @@ module Pemilu
     format :json
 
     resource :anggota do
+      helpers DprHelpers
+
       desc "Return all member of DPR"
       get do
         members = Array.new
@@ -40,14 +57,17 @@ module Pemilu
           conditions[value.to_sym] = params[key.to_sym] unless params[key.to_sym].blank?
         end
 
+        lembaga = params[:lembaga].blank? ? {} : {akd_members: {akd_id: params[:lembaga]}}
+
         # Set default limit
         limit = (params[:limit].to_i == 0 || params[:limit].empty?) ? 1000 : params[:limit]
 
-        search = ["nama LIKE ? and agama LIKE ?", "%#{params[:nama]}%", "%#{params[:agama]}%"]
+        search = ["anggota_dprs.nama LIKE ? and anggota_dprs.agama LIKE ?", "%#{params[:nama]}%", "%#{params[:agama]}%"]
 
-        AnggotaDpr.includes(:province, :electoral_district, :party, :komisi)
+        AnggotaDpr.includes(:province, :electoral_district, :party, :komisi, :akd_members)
           .where(conditions)
           .where(search)
+          .where(lembaga)
           .limit(limit)
           .offset(params[:offset])
           .each do |member|
@@ -75,14 +95,15 @@ module Pemilu
               suara_sah: member.suara_sah,
               peringkat_suara_sah_calon: member.peringkat_suara_sah_calon,
               terpilih: member.terpilih,
-              komisi: member.komisi
+              komisi: member.komisi,
+              akd: build_akd(member.akd_members)
             }
         end
 
         {
           results: {
             count: members.count,
-            total: AnggotaDpr.where(conditions).where(search).count,
+            total: AnggotaDpr.includes(:akd_members).where(conditions).where(search).where(lembaga).count,
             anggota: members
           }
         }
@@ -128,7 +149,8 @@ module Pemilu
                   suara_sah: member.suara_sah,
                   peringkat_suara_sah_calon: member.peringkat_suara_sah_calon,
                   terpilih: member.terpilih,
-                  komisi: member.komisi
+                  komisi: member.komisi,
+                  akd: build_akd(member.akd_members)
                 }]
               }
             }
@@ -184,6 +206,38 @@ module Pemilu
             }
           }
         end
+      end
+    end
+
+    resource :akd do
+      desc "Return all Alat Kelengkapan Dewan"
+      get do
+        data_akd = Array.new
+
+        valid_params = {
+            akd: 'id'
+        }
+
+        conditions = Hash.new
+        valid_params.each_pair do |key, value|
+          conditions[value.to_sym] = params[key.to_sym] unless params[key.to_sym].blank?
+        end
+
+        Akd.where(conditions)
+          .each do |institute|
+            data_akd << {
+              id: institute.id,
+              nama: institute.nama,
+              tugas: institute.tugas
+            }
+          end
+
+        {
+          results: {
+            count: data_akd.count,
+            akd: data_akd
+          }
+        }
       end
     end
 

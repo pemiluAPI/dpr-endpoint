@@ -8,4 +8,5 @@ class AnggotaDpr < ActiveRecord::Base
   has_many :riwayat_organisasi_dprs,  -> { select('id, id_calon, ringkasan') }, foreign_key: :id_calon
   has_many :riwayat_pekerjaan_dprs,  -> { select('id, ringkasan') }, foreign_key: :id_calon
   has_many :riwayat_pendidikan_dprs,  -> { select('id, ringkasan') }, foreign_key: :id_calon
+  has_many :akd_members, -> { select('id, anggota_id, jabatan, akd_id, institute') }, foreign_key: :anggota_id
 end
