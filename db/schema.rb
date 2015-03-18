@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150302064408) do
+ActiveRecord::Schema.define(version: 20150318093757) do
 
   create_table "akd_members", force: true do |t|
     t.string "anggota_id"
@@ -20,6 +20,8 @@ ActiveRecord::Schema.define(version: 20150302064408) do
     t.string "akd_id"
     t.string "institute"
   end
+
+  add_index "akd_members", ["akd_id"], name: "index_akd_members_on_akd_id", using: :btree
 
   create_table "akds", force: true do |t|
     t.string "nama"
@@ -52,6 +54,8 @@ ActiveRecord::Schema.define(version: 20150302064408) do
     t.string  "komisi_id"
     t.string  "nomor_anggota"
   end
+
+  add_index "anggota_dprs", ["komisi_id"], name: "index_anggota_dprs_on_komisi_id", using: :btree
 
   create_table "daerah_pemilihans", force: true do |t|
     t.string "nama"
@@ -87,6 +91,8 @@ ActiveRecord::Schema.define(version: 20150302064408) do
     t.string "jumlah"
     t.string "daerah_pemilihan_id"
   end
+
+  add_index "perolehan_kursis", ["daerah_pemilihan_id"], name: "index_perolehan_kursis_on_daerah_pemilihan_id", using: :btree
 
   create_table "provinces", force: true do |t|
     t.string  "nama"
